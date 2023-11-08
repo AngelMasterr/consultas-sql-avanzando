@@ -1,0 +1,17 @@
+SELECT * FROM facturas;
+SELECT * FROM tabla_de_clientes;
+SELECT COUNT(*) FROM tabla_de_clientes;
+
+SELECT DISTINCT A.NOMBRE, A.DNI, B.DNI FROM tabla_de_clientes A
+INNER JOIN facturas B
+ON A.DNI = B.DNI;
+
+SELECT DISTINCT A.NOMBRE, A.CIUDAD, A.DNI, B.DNI FROM tabla_de_clientes A
+LEFT JOIN facturas B
+ON A.DNI = B.DNI
+WHERE B.DNI IS NULL;
+
+SELECT DISTINCT B.NOMBRE, B.CIUDAD, B.DNI, A.DNI FROM facturas A
+RIGHT JOIN tabla_de_clientes B
+ON A.DNI = B.DNI
+WHERE A.DNI IS NULL;
