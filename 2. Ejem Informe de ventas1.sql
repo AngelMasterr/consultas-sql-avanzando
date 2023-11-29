@@ -1,0 +1,54 @@
+SELECT * FROM facturas;
+
+SELECT * FROM items_facturas;
+
+SELECT F.DNI, F.FECHA_VENTA, IFa.CANTIDAD FROM facturas f 
+INNER JOIN items_facturas IFa ON F.NUMERO = IFa.NUMERO;
+
+# Dar formato en meses a la columnas FECHA_VENTA
+SELECT F.DNI, date_format(F.FECHA_VENTA, "%m - %Y") AS MES_AÑO, IFa.CANTIDAD 
+FROM facturas f INNER JOIN items_facturas IFa 
+ON F.NUMERO = IFa.NUMERO;
+
+# Cantidad de ventas por mes para cada cliente
+SELECT F.DNI, date_format(F.FECHA_VENTA, "%m - %Y") AS MES_AÑO, 
+SUM(IFa.CANTIDAD) AS CANTIDAD_VENDIDA
+FROM facturas f INNER JOIN items_facturas IFa 
+ON F.NUMERO = IFa.NUMERO
+GROUP BY F.DNI, date_format(F.FECHA_VENTA, "%m - %Y");
+
+# Limite de ventas para cada cliente (Volumen en decilitros)
+SELECT * FROM tabla_de_clientes TC;
+
+SELECT DNI, NOMBRE, VOLUMEN_DE_COMPRA from tabla_de_clientes TC;
+
+SELECT F.DNI, TC.NOMBRE,  date_format(F.FECHA_VENTA, "%m - %Y") AS MES_AÑO, 
+SUM(IFa.CANTIDAD) AS CANTIDAD_VENDIDA, MAX(TC.VOLUMEN_DE_COMPRA)/10 AS CANTIDAD_MAXIMA
+FROM facturas f 
+INNER JOIN items_facturas IFa ON F.NUMERO = IFa.NUMERO
+INNER JOIN tabla_de_clientes TC ON TC.DNI = F.DNI 
+GROUP BY F.DNI, TC.NOMBRE, date_format(F.FECHA_VENTA, "%m - %Y");
+
+SELECT A.DNI, A.NOMBRE, A.MES_AÑO,
+A.CANTIDAD_VENDIDA - A.CANTIDAD_MAXIMA AS DIFERENCIA 
+FROM (
+SELECT F.DNI, TC.NOMBRE,  date_format(F.FECHA_VENTA, "%m - %Y") AS MES_AÑO, 
+SUM(IFa.CANTIDAD) AS CANTIDAD_VENDIDA, MAX(TC.VOLUMEN_DE_COMPRA)/10 AS CANTIDAD_MAXIMA
+FROM facturas f 
+INNER JOIN items_facturas IFa ON F.NUMERO = IFa.NUMERO
+INNER JOIN tabla_de_clientes TC ON TC.DNI = F.DNI 
+GROUP BY F.DNI, TC.NOMBRE, date_format(F.FECHA_VENTA, "%m - %Y")) AS A;
+
+SELECT A.DNI, A.NOMBRE, A.MES_AÑO,
+A.CANTIDAD_VENDIDA - A.CANTIDAD_MAXIMA AS DIFERENCIA,
+CASE
+	WHEN A.CANTIDAD_VENDIDA - A.CANTIDAD_MAXIMA <= 0 THEN "Venta Válida"
+    ELSE "Venta Inválida"
+END AS STATUS_VENTA
+FROM (
+SELECT F.DNI, TC.NOMBRE,  date_format(F.FECHA_VENTA, "%m - %Y") AS MES_AÑO, 
+SUM(IFa.CANTIDAD) AS CANTIDAD_VENDIDA, MAX(TC.VOLUMEN_DE_COMPRA)/10 AS CANTIDAD_MAXIMA
+FROM facturas f 
+INNER JOIN items_facturas IFa ON F.NUMERO = IFa.NUMERO
+INNER JOIN tabla_de_clientes TC ON TC.DNI = F.DNI 
+GROUP BY F.DNI, TC.NOMBRE, date_format(F.FECHA_VENTA, "%m - %Y")) AS A;
